@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="SismonPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>com.sismon.model.Empresa</class>
+    <class>com.sismon.model.Taladro</class>
+    <class>com.sismon.model.Macolla</class>
+    <class>com.sismon.model.TaladroHasFase</class>
+    <class>com.sismon.model.Pozo</class>
+    <class>com.sismon.model.Fila</class>
+    <class>com.sismon.model.Escenario</class>
+    <class>com.sismon.model.FilaHasTaladro</class>
+    <class>com.sismon.model.TaladroMant</class>
+    <class>com.sismon.model.Fase</class>
+    <class>com.sismon.model.PozoSecuencia</class>
+    <class>com.sismon.model.MacollaSecuencia</class>
+    <class>com.sismon.model.Distrito</class>
+    <class>com.sismon.model.Campo</class>
+    <class>com.sismon.model.Perforacion</class>
+    <class>com.sismon.model.Division</class>
+    <class>com.sismon.model.Rampeo</class>
+    <class>com.sismon.model.Paridad</class>
+    <class>com.sismon.model.TaladroStatus</class>
+    <class>com.sismon.model.TaladroSustituto</class>
+    <class>com.sismon.model.Explotacion</class>
+    <class>com.sismon.model.PozoExplotado</class>
+    <class>com.sismon.model.MacollaExplotada</class>
+    <class>com.sismon.model.TipoPozo</class>
+    <class>com.sismon.model.TaladroAsignado</class>
+    <class>com.sismon.model.TaladroTraza</class>
+    <class>com.sismon.model.ProduccionMesInicial</class>
+<!--    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/sismon_6?zeroDateTimeBehavior=convertToNull"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.password" value="root"/>
+    </properties>-->
+    <!--Para trabajar con Derby Embedded-->
+            <properties>
+            <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:derby:./derby/release/database/pdvsa_db;create=true;territory=es_VE"/>
+            <property name="javax.persistence.jdbc.user" value="root"/>
+            <property name="javax.persistence.jdbc.password" value="root"/>
+            <!--EclipseLink should create the database schema automatically--> 
+            <property name="eclipselink.ddl-generation" value="create-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
+            <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
+            <property name="eclipselink.jdbc.batch-writing.size" value="100"/>   
+        </properties> 
+  </persistence-unit>
+</persistence>

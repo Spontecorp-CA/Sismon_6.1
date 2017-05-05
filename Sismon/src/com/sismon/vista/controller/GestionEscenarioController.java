@@ -686,7 +686,13 @@ public class GestionEscenarioController extends SwingWorker<Boolean, Void> {
             perf.setUsd(p.getUsd());
             perf.setEquiv(p.getEquiv());
             perf.setEscenarioId(escenarioActual);
-            perf.setStatus(p.getStatus());
+            
+            Optional<Double> optStatus = Optional.ofNullable(p.getStatus());
+            if(optStatus.isPresent()){
+                perf.setStatus(p.getStatus());
+            } else {
+                perf.setStatus(Constantes.PERF_ORIGINAL);
+            }
             pfList.add(perf);
         }
         perfManager.batchSave(pfList);

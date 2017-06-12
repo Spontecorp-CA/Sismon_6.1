@@ -160,6 +160,7 @@ public class GestionTiempoCostoPerfIF extends javax.swing.JInternalFrame {
                             break;
                     }
                     perf.setDias(perf.getDiasActivos() + perf.getDiasInactivos());
+                    perf.setStatus(Constantes.PERF_MODIFICADA);
                     perfMap.put(row, perf);
                     guardarButton.setEnabled(true);
                 } else {

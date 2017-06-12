@@ -305,7 +305,7 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
         double bs;
         double usd;
         double equiv;
-
+        
         Map<String, Double[]> tiemposMap = tiemposPerforacionMap.get(sec.getPozoId());
 
         Double status = null;

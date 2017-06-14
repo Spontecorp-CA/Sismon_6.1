@@ -316,12 +316,9 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
             if (statusOpt.isPresent()) {
                 status = statusOpt.get();
             } else {
-                SismonLog.getInstance().logger.log(Level.SEVERE,
-                        "Fall\u00f3 en {0} en la fila {1} con el taladro {2} en la fase: {3}",
-                        new Object[]{sec.getPozoId(), sec.getFilaId(),
-                            taladro.getNombre(), sec.getFase()});
+                postLogMessage(sec, taladro);
             }
-
+            
             if (status != Constantes.PERF_MODIFICADA) {
                 // aqui toma los valores que viene de modificar las fases del taladro
                 dias = thf.getDias();
@@ -329,7 +326,6 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
                 diasInactivos = 0.0;
                 bs = thf.getCostoBs();
                 usd = thf.getCostoUsd();
-                equiv = (paridad.getValor() * bs) + usd;
             } else {
                 // aqui toma los valores de la tabla de perforación
                 dias = tiemposMap.get(sec.getFase())[0];
@@ -337,16 +333,16 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
                 diasInactivos = tiemposMap.get(sec.getFase())[2];
                 bs = tiemposMap.get(sec.getFase())[3];
                 usd = tiemposMap.get(sec.getFase())[4];
-                equiv = tiemposMap.get(sec.getFase())[5];
             }
+            equiv = (bs /paridad.getValor()) + usd;
         } else {
             dias = thf.getDias();
             diasActivos = dias;
             diasInactivos = 0.0;
             bs = thf.getCostoBs();
             usd = thf.getCostoUsd();
-            equiv = (paridad.getValor() * bs) + usd;
-            status = Constantes.PERF_ORIGINAL;
+            equiv = (bs /paridad.getValor() ) + usd;
+            status = Constantes.PERF_DE_TALADRO;
         }
 
         LocalDate ldIn = LocalDateTime.ofInstant(fechaIn.toInstant(), ZoneId.systemDefault())
@@ -359,7 +355,7 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
             fechaOut = agregarDiasAFecha(fechaOut, diasMant);
         }
 
-        Object[] elementos = new Object[15];
+        Object[] elementos = new Object[17];
         elementos[0] = taladro;
         elementos[1] = sec.getFilaId().getMacollaId();
         elementos[2] = sec.getFilaId();
@@ -379,6 +375,13 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
         estrategiaPerforacionMap.put(indicePerforacion++, elementos);
         filasPerforadasMap.put(sec.getFilaId(), FILA_PERFORADA);
         return fechaOut;
+    }
+    
+    private void postLogMessage(PozoSecuencia sec, Taladro taladro){
+        SismonLog.getInstance().logger.log(Level.SEVERE,
+                "Fall\u00f3 en {0} en la fila {1} con el taladro {2} en la fase: {3}",
+                new Object[]{sec.getPozoId(), sec.getFilaId(),
+                    taladro.getNombre(), sec.getFase()});
     }
 
     private void makeCompletacion(PozoSecuencia sec, Taladro taladro, Date fechaIn,
@@ -435,7 +438,7 @@ public class PerforacionEscenarioController3 extends SwingWorker<Map<Integer, Ob
         elementos[11] = dias;
         elementos[12] = diasActivos;
         elementos[13] = diasInactivos;
-        elementos[14] = Constantes.PERF_ORIGINAL;
+        elementos[14] = Constantes.PERF_DE_TALADRO;
 
         estrategiaPerforacionMap.put(indicePerforacion++, elementos);
     }

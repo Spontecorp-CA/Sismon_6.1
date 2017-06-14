@@ -218,7 +218,7 @@ public class Perforacion implements Serializable {
     public void setStatus(Double status) {
         this.status = status;
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 0;

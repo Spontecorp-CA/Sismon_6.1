@@ -3,14 +3,17 @@ package com.sismon.vista.escenario;
 import com.sismon.controller.Constantes;
 import com.sismon.jpamanager.EscenarioManager;
 import com.sismon.jpamanager.ParidadManager;
+import com.sismon.jpamanager.PerforacionManager;
 import com.sismon.jpamanager.TaladroHasFaseManager;
 import com.sismon.jpamanager.TaladroManager;
 import com.sismon.model.Escenario;
 import com.sismon.model.Paridad;
+import com.sismon.model.Perforacion;
 import com.sismon.model.Taladro;
 import com.sismon.model.TaladroHasFase;
 import com.sismon.vista.Contexto;
 import com.sismon.vista.utilities.SismonLog;
+import com.sismon.vista.utilities.Utils;
 import com.sismon.vista.utilities.VistaUtilities;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
@@ -26,11 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.Document;
 
 public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
         implements PropertyChangeListener {
@@ -54,6 +60,40 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
     private final TaladroManager taladroManager;
     private final EscenarioManager escenarioManager;
     private final TaladroHasFaseManager faseManager;
+    private final PerforacionManager perforacionManager;
+
+    private boolean mudanzaEntreMacollasDiasChange = false;
+    private boolean mudanzaEntrePozosDiasChange = false;
+    private boolean superficialDiasChange = false;
+    private boolean slantDiasChange = false;
+    private boolean pilotoDiasChange = false;
+    private boolean verticalDiasChange = false;
+    private boolean intermedioDiasChange = false;
+    private boolean productorDiasChange = false;
+    private boolean completacionDiasChange = false;
+    private boolean conexionDiasChange = false;
+
+    private boolean mudanzaEntreMacollasBsChange = false;
+    private boolean mudanzaEntrePozosBsChange = false;
+    private boolean superficialBsChange = false;
+    private boolean slantBsChange = false;
+    private boolean pilotoBsChange = false;
+    private boolean verticalBsChange = false;
+    private boolean intermedioBsChange = false;
+    private boolean productorBsChange = false;
+    private boolean completacionBsChange = false;
+    private boolean conexionBsChange = false;
+
+    private boolean mudanzaEntreMacollasUsdChange = false;
+    private boolean mudanzaEntrePozosUsdChange = false;
+    private boolean superficialUsdChange = false;
+    private boolean slantUsdChange = false;
+    private boolean pilotoUsdChange = false;
+    private boolean verticalUsdChange = false;
+    private boolean intermedioUsdChange = false;
+    private boolean productorUsdChange = false;
+    private boolean completacionUsdChange = false;
+    private boolean conexionUsdChange = false;
 
     private static final SismonLog sismonlog = SismonLog.getInstance();
     private final ImageIcon icon = new ImageIcon(Toolkit.getDefaultToolkit()
@@ -70,10 +110,11 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
         taladroManager = new TaladroManager();
         escenarioManager = new EscenarioManager();
         faseManager = new TaladroHasFaseManager();
+        perforacionManager = new PerforacionManager();
 
         taladrosMap = new HashMap<>();
-
         init();
+        resetChanges();
     }
 
     public static GestionFaseTaladrosIF getInstance() {
@@ -180,6 +221,48 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
         fechaDateChooser.getDateEditor().removePropertyChangeListener(dateListener);
     }
 
+    private void setDocumentNames() {
+        mudanzaMacollaDiasTextField.getDocument().putProperty("name", "mudanzaMacollaDiasTextField");
+        mudanzaMacollaBsTextField.getDocument().putProperty("name", "mudanzaMacollaBsTextField");
+        mudanzaMacollaUsdTextField.getDocument().putProperty("name", "mudanzaMacollaUsdTextField");
+
+        mudanzaPozoDiasTextField.getDocument().putProperty("name", "mudanzaPozoDiasTextField");
+        mudanzaPozoBsTextField.getDocument().putProperty("name", "mudanzaPozoBsTextField");
+        mudanzaPozoUsdTextField.getDocument().putProperty("name", "mudanzaPozoUsdTextField");
+
+        superficialDiasTextField.getDocument().putProperty("name", "superficialDiasTextField");
+        superficialBsTextField.getDocument().putProperty("name", "superficialBsTextField");
+        superficialUsdTextField.getDocument().putProperty("name", "superficialUsdTextField");
+
+        slantDiasTextField.getDocument().putProperty("name", "slantDiasTextField");
+        slantBsTextField.getDocument().putProperty("name", "slantBsTextField");
+        slantUsdTextField.getDocument().putProperty("name", "slantUsdTextField");
+
+        pilotoDiasTextField.getDocument().putProperty("name", "pilotoDiasTextField");
+        pilotoBsTextField.getDocument().putProperty("name", "pilotoBsTextField");
+        pilotoUsdTextField.getDocument().putProperty("name", "pilotoUsdTextField");
+
+        verticalDiasTextField.getDocument().putProperty("name", "verticalDiasTextField");
+        verticalBsTextField.getDocument().putProperty("name", "verticalBsTextField");
+        verticalUsdTextField.getDocument().putProperty("name", "verticalUsdTextField");
+
+        intermedioDiasTextField.getDocument().putProperty("name", "intermedioDiasTextField");
+        intermedioBsTextField.getDocument().putProperty("name", "intermedioBsTextField");
+        intermedioUsdTextField.getDocument().putProperty("name", "intermedioUsdTextField");
+
+        productorDiasTextField.getDocument().putProperty("name", "productorDiasTextField");
+        productorBsTextField.getDocument().putProperty("name", "productorBsTextField");
+        productorUsdTextField.getDocument().putProperty("name", "productorUsdTextField");
+
+        completacionDiasTextField.getDocument().putProperty("name", "completacionDiasTextField");
+        completacionBsTextField.getDocument().putProperty("name", "completacionBsTextField");
+        completacionUsdTextField.getDocument().putProperty("name", "completacionUsdTextField");
+
+        conexionDiasTextField.getDocument().putProperty("name", "conexionDiasTextField");
+        conexionBsTextField.getDocument().putProperty("name", "conexionBsTextField");
+        conexionUsdTextField.getDocument().putProperty("name", "conexionUsdTextField");
+    }
+
     private void fillTaladrosComboBox() {
         List<Taladro> taladroList = taladroManager.findAll(escenarioSelected);
         taladrosComboBox.removeAllItems();
@@ -252,7 +335,7 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
 
     private void fillFechaTable() {
         fechasTable.setModel(new DefaultTableModel());
-        
+
         List<Date> fechas = faseManager.findAllDates(taladroSelected, escenarioSelected);
         String[] titles = {"Fecha"};
         Object[][] datos = new Object[fechas.size()][titles.length];
@@ -345,6 +428,10 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
         }
         saveButton.setEnabled(false);
         List<TaladroHasFase> fases = faseManager.findAll(taladroSelected, escenarioSelected, fechaSelected);
+
+        boolean diasChange = false;
+        boolean bsChange = false;
+        boolean usdChange = false;
         try {
             if (isEditing) {
                 for (TaladroHasFase fase : fases) {
@@ -413,9 +500,19 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
                     faseManager.batchEdit(fases);
                     Contexto.showMessage("Fase de taladro actualizada con éxito", Constantes.MENSAJE_INFO);
                 }
+                updatePerforacionData(taladroSelected, escenarioSelected, fases);
+                // actualizar la tabla de perforación para colocar los nuevos valores
+//                List<Perforacion> perforacionList = perforacionManager.findAll(escenarioSelected, taladroSelected);
+//                for (Perforacion perf : perforacionList) {
+//                    perf.setStatusDias(Constantes.PERF_DIAS_DE_TALADRO);
+//                    perf.setStatusBs(Constantes.PERF_BS_DE_TALADRO);
+//                    perf.setStatusUsd(Constantes.PERF_USD_DE_TALADRO);
+//                }
+//                perforacionManager.batchEdit(perforacionList);
+
             } else {
                 if (isValidDateModification(fechaSelected)) {
-                
+
                     List<TaladroHasFase> faseList = new ArrayList();
                     // fase mudanza entre macollas
                     TaladroHasFase fase = new TaladroHasFase();
@@ -423,7 +520,7 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
                     fase.setEscenarioId(escenarioSelected);
                     fase.setTaladroId(taladroSelected);
                     fase.setFecha(fechaSelected);
-                    if(!mudanzaMacollaDiasTextField.getText().isEmpty()){
+                    if (!mudanzaMacollaDiasTextField.getText().isEmpty()) {
                         fase.setDias(VistaUtilities.parseDouble(mudanzaMacollaDiasTextField.getText()));
                     } else {
                         fase.setDias(0.0);
@@ -690,10 +787,140 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
         }
     }
 
+    private void updatePerforacionData(Taladro taladroSelected, Escenario escenarioSelected,
+            List<TaladroHasFase> fases) throws ParseException {
+
+        List<Perforacion> perforaciones = perforacionManager.findAll(escenarioSelected, taladroSelected);
+        // los cambios de la fase superficial
+        for(Perforacion perf : perforaciones){
+            // mudanza entre macollas
+            if (mudanzaEntreMacollasDiasChange 
+                    && perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_MACOLLAS)) {
+                perf.setDias(Utils.parseDouble(mudanzaMacollaDiasTextField.getText()));
+            }
+            
+            if (mudanzaEntreMacollasBsChange
+                    && perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_MACOLLAS)) {
+                perf.setDias(Utils.parseDouble(mudanzaMacollaBsTextField.getText()));
+            }
+            
+            if (mudanzaEntreMacollasUsdChange
+                    && perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_MACOLLAS)) {
+                perf.setDias(Utils.parseDouble(mudanzaMacollaUsdTextField.getText()));
+            }
+            
+            // mudanza entre pozos
+            if (mudanzaEntrePozosDiasChange
+                    && perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_POZOS)) {
+                perf.setDias(Utils.parseDouble(mudanzaPozoDiasTextField.getText()));
+            }
+
+            if (mudanzaEntrePozosBsChange
+                    && perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_POZOS)) {
+                perf.setDias(Utils.parseDouble(mudanzaPozoBsTextField.getText()));
+            }
+
+            if (mudanzaEntrePozosUsdChange
+                    && perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_POZOS)) {
+                perf.setDias(Utils.parseDouble(mudanzaPozoUsdTextField.getText()));
+            }
+            
+            // superficial
+            if (superficialDiasChange && perf.getFase().equals(Constantes.FASE_SUPERFICIAL)) {
+                perf.setDias(Utils.parseDouble(superficialDiasTextField.getText()));
+            }
+            
+            if (superficialBsChange && perf.getFase().equals(Constantes.FASE_SUPERFICIAL)) {
+                perf.setBs(Utils.parseDouble(superficialBsTextField.getText()));
+            }
+            if (superficialUsdChange && perf.getFase().equals(Constantes.FASE_SUPERFICIAL)) {
+                perf.setUsd(Utils.parseDouble(superficialUsdTextField.getText()));
+            }
+            
+            // slant
+            if (slantDiasChange && perf.getFase().equals(Constantes.FASE_SLANT)) {
+                perf.setDias(Utils.parseDouble(slantDiasTextField.getText()));
+            }
+            if (slantBsChange && perf.getFase().equals(Constantes.FASE_SLANT)) {
+                perf.setBs(Utils.parseDouble(slantBsTextField.getText()));
+            }
+            if (slantUsdChange && perf.getFase().equals(Constantes.FASE_SLANT)) {
+                perf.setUsd(Utils.parseDouble(slantUsdTextField.getText()));
+            }
+            
+            // piloto
+            if (pilotoDiasChange && perf.getFase().equals(Constantes.FASE_PILOTO)) {
+                perf.setDias(Utils.parseDouble(pilotoDiasTextField.getText()));
+            }
+            if (pilotoBsChange && perf.getFase().equals(Constantes.FASE_PILOTO)) {
+                perf.setBs(Utils.parseDouble(pilotoBsTextField.getText()));
+            }
+            if (pilotoUsdChange && perf.getFase().equals(Constantes.FASE_PILOTO)) {
+                perf.setUsd(Utils.parseDouble(pilotoUsdTextField.getText()));
+            }
+            
+            // vertical
+            if (verticalDiasChange && perf.getFase().equals(Constantes.FASE_VERTICAL)) {
+                perf.setDias(Utils.parseDouble(verticalDiasTextField.getText()));
+            }
+            if (verticalBsChange && perf.getFase().equals(Constantes.FASE_VERTICAL)) {
+                perf.setBs(Utils.parseDouble(verticalBsTextField.getText()));
+            }
+            if (verticalUsdChange && perf.getFase().equals(Constantes.FASE_VERTICAL)) {
+                perf.setUsd(Utils.parseDouble(verticalUsdTextField.getText()));
+            }
+            
+            // intermedio
+            if (intermedioDiasChange && perf.getFase().equals(Constantes.FASE_INTERMEDIO)) {
+                perf.setDias(Utils.parseDouble(intermedioDiasTextField.getText()));
+            }
+            if (intermedioBsChange && perf.getFase().equals(Constantes.FASE_INTERMEDIO)) {
+                perf.setBs(Utils.parseDouble(intermedioBsTextField.getText()));
+            }
+            if (intermedioUsdChange && perf.getFase().equals(Constantes.FASE_INTERMEDIO)) {
+                perf.setUsd(Utils.parseDouble(intermedioUsdTextField.getText()));
+            }
+            
+            // productor
+            if (productorDiasChange && perf.getFase().equals(Constantes.FASE_PRODUCTOR)) {
+                perf.setDias(Utils.parseDouble(productorDiasTextField.getText()));
+            }
+            if (productorBsChange && perf.getFase().equals(Constantes.FASE_PRODUCTOR)) {
+                perf.setBs(Utils.parseDouble(productorBsTextField.getText()));
+            }
+            if (productorUsdChange && perf.getFase().equals(Constantes.FASE_PRODUCTOR)) {
+                perf.setUsd(Utils.parseDouble(productorUsdTextField.getText()));
+            }
+            
+            // completacion
+            if (completacionDiasChange && perf.getFase().equals(Constantes.FASE_COMPLETACION)) {
+                perf.setDias(Utils.parseDouble(completacionDiasTextField.getText()));
+            }
+            if (completacionBsChange && perf.getFase().equals(Constantes.FASE_COMPLETACION)) {
+                perf.setBs(Utils.parseDouble(completacionBsTextField.getText()));
+            }
+            if (completacionUsdChange && perf.getFase().equals(Constantes.FASE_COMPLETACION)) {
+                perf.setUsd(Utils.parseDouble(completacionUsdTextField.getText()));
+            }
+            
+            // conexion
+            if (conexionDiasChange && perf.getFase().equals(Constantes.FASE_CONEXION)) {
+                perf.setDias(Utils.parseDouble(conexionDiasTextField.getText()));
+            }
+            if (conexionBsChange && perf.getFase().equals(Constantes.FASE_CONEXION)) {
+                perf.setBs(Utils.parseDouble(conexionBsTextField.getText()));
+            }
+            if (conexionUsdChange && perf.getFase().equals(Constantes.FASE_CONEXION)) {
+                perf.setUsd(Utils.parseDouble(conexionUsdTextField.getText()));
+            }
+        }
+        perforacionManager.batchEdit(perforaciones);
+    }
+
     private void modify() {
         saveButton.setEnabled(true);
     }
-    
+
     private boolean isValidDateModification(Date fecha) {
         if (escenarioSelected.getFechaCierre() != null) {
             return fecha.after(escenarioSelected.getFechaCierre());
@@ -707,6 +934,41 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
         JOptionPane.showMessageDialog(this,
                 "No puede hacer cambios en este escenario antes de esta fecha: " + fecha,
                 "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void resetChanges() {
+        mudanzaEntreMacollasDiasChange = false;
+        mudanzaEntrePozosDiasChange = false;
+        superficialDiasChange = false;
+        slantDiasChange = false;
+        pilotoDiasChange = false;
+        verticalDiasChange = false;
+        intermedioDiasChange = false;
+        productorDiasChange = false;
+        completacionDiasChange = false;
+        conexionDiasChange = false;
+
+        mudanzaEntreMacollasBsChange = false;
+        mudanzaEntrePozosBsChange = false;
+        superficialBsChange = false;
+        slantBsChange = false;
+        pilotoBsChange = false;
+        verticalBsChange = false;
+        intermedioBsChange = false;
+        productorBsChange = false;
+        completacionBsChange = false;
+        conexionBsChange = false;
+
+        mudanzaEntreMacollasUsdChange = false;
+        mudanzaEntrePozosUsdChange = false;
+        superficialUsdChange = false;
+        slantUsdChange = false;
+        pilotoUsdChange = false;
+        verticalUsdChange = false;
+        intermedioUsdChange = false;
+        productorUsdChange = false;
+        completacionUsdChange = false;
+        conexionUsdChange = false;
     }
 
     /**
@@ -1391,12 +1653,13 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         //saveTaladrosData();
         updateModel();
+        resetChanges();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void onActivated(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_onActivated
         fillEscenarioComboBox();
         Contexto.setActiveFrame(instance);
-        configureListeners();
+        setDocumentNames();
     }//GEN-LAST:event_onActivated
 
     private void escenarioComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_escenarioComboBoxActionPerformed
@@ -1408,7 +1671,9 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
             fechasTable.setModel(new DefaultTableModel());
             taladrosComboBox.removeAllItems();
             taladrosComboBox.addItem("... seleccione Taladro");
+            removeListeners();
         }
+        saveButton.setEnabled(false);
         Contexto.showMessage("", Constantes.MENSAJE_CLEAR);
     }//GEN-LAST:event_escenarioComboBoxActionPerformed
 
@@ -1425,6 +1690,7 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
             Contexto.showMessage("", Constantes.MENSAJE_CLEAR);
             changeOk = true;
             isEditing = true;
+            configureListeners();
         } catch (ParseException ex) {
             sismonlog.logger.log(Level.SEVERE, null, ex);
         }
@@ -1542,23 +1808,118 @@ public class GestionFaseTaladrosIF extends javax.swing.JInternalFrame
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            if (changeOk) {
-                modify();
-            }
+            doListenerAction(e);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            if (changeOk) {
-                modify();
-            }
+            doListenerAction(e);
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            if (changeOk) {
-                modify();
-            }
+            doListenerAction(e);
         }
     };
+
+    private void doListenerAction(DocumentEvent e) {
+        Document doc = e.getDocument();
+        String jtf = (String) doc.getProperty("name");
+        switch (jtf) {
+            case "mudanzaMacollaDiasTextField":
+                mudanzaEntreMacollasDiasChange = true;
+                break;
+            case "mudanzaMacollaBsTextField":
+                mudanzaEntreMacollasBsChange = true;
+                break;
+            case "mudanzaMacollaUsdTextField":
+                mudanzaEntreMacollasUsdChange = true;
+                break;
+            case "mudanzaPozoDiasTextField":
+                mudanzaEntrePozosDiasChange = true;
+                break;
+            case "mudanzaPozoBsTextField":
+                mudanzaEntrePozosBsChange = true;
+                break;
+            case "mudanzaPozoUsdTextField":
+                mudanzaEntrePozosUsdChange = true;
+                break;
+            case "superficialDiasTextField":
+                superficialDiasChange = true;
+                break;
+            case "superficialBsTextField":
+                superficialBsChange = true;
+                break;
+            case "superficialUsdTextField":
+                superficialUsdChange = true;
+                break;
+            case "slantDiasTextField":
+                slantDiasChange = true;
+                break;
+            case "slantBsTextField":
+                slantBsChange = true;
+                break;
+            case "slantUsdTextField":
+                slantUsdChange = true;
+                break;
+            case "pilotoDiasTextField":
+                pilotoDiasChange = true;
+                break;
+            case "pilotoBsTextField":
+                pilotoBsChange = true;
+                break;
+            case "pilotoUsdTextField":
+                pilotoUsdChange = true;
+                break;
+            case "verticalDiasTextField":
+                verticalDiasChange = true;
+                break;
+            case "verticalBsTextField":
+                verticalBsChange = true;
+                break;
+            case "verticalUsdTextField":
+                verticalUsdChange = true;
+                break;
+            case "intermedioDiasTextField":
+                intermedioDiasChange = true;
+                break;
+            case "intermedioBsTextField":
+                intermedioBsChange = true;
+                break;
+            case "intermedioUsdTextField":
+                intermedioUsdChange = true;
+                break;
+            case "productorDiasTextField":
+                productorDiasChange = true;
+                break;
+            case "productorBsTextField":
+                productorBsChange = true;
+                break;
+            case "productorUsdTextField":
+                productorUsdChange = true;
+                break;
+            case "completacionDiasTextField":
+                completacionDiasChange = true;
+                break;
+            case "completacionBsTextField":
+                completacionBsChange = true;
+                break;
+            case "completacionUsdTextField":
+                completacionUsdChange = true;
+                break;
+            case "conexionDiasTextField":
+                conexionDiasChange = true;
+                break;
+            case "conexionBsTextField":
+                conexionBsChange = true;
+                break;
+            case "conexionUsdTextField":
+                conexionUsdChange = true;
+                break;
+        }
+
+        if (changeOk) {
+            modify();
+        }
+    }
 }

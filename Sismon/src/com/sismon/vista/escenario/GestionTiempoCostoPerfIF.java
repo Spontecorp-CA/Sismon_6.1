@@ -9,23 +9,15 @@ import com.sismon.model.Escenario;
 import com.sismon.model.Fila;
 import com.sismon.model.Macolla;
 import com.sismon.model.Perforacion;
-import com.sismon.model.Taladro;
 import com.sismon.vista.Contexto;
 import com.sismon.vista.controller.EditableCostosTableModel;
-import com.sismon.vista.controller.PerforacionEscenarioController;
 import com.sismon.vista.utilities.SismonLog;
 import java.awt.Toolkit;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -176,6 +168,7 @@ public class GestionTiempoCostoPerfIF extends javax.swing.JInternalFrame {
         List<Perforacion> perforaciones = new ArrayList<>(perfMap.values());
         perforacionManager.batchEdit(perforaciones);
         Contexto.showMessage("Cambios guardados ", Constantes.MENSAJE_INFO);
+        guardarButton.setEnabled(false);
     }
 
     /**

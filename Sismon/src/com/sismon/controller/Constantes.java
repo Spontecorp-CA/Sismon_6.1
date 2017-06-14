@@ -88,6 +88,6 @@ public class Constantes {
     public static final int TAB_ASIGNACION_NUEVOS = 5;
     
     // referente a la modificación de los valores de perforacion
-    public static final double PERF_ORIGINAL = 0.0; // como viene del taladro
-    public static final double PERF_MODIFICADA = 1.0; // modificada después de perforara
+    public static final double PERF_DE_TALADRO = 0.0; // como viene del taladro
+    public static final double PERF_MODIFICADA = 1.0; // modificada después de perforar
 }

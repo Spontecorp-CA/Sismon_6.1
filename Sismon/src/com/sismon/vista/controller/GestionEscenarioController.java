@@ -691,7 +691,7 @@ public class GestionEscenarioController extends SwingWorker<Boolean, Void> {
             if(optStatus.isPresent()){
                 perf.setStatus(p.getStatus());
             } else {
-                perf.setStatus(Constantes.PERF_ORIGINAL);
+                perf.setStatus(Constantes.PERF_MODIFICADA);
             }
             pfList.add(perf);
         }

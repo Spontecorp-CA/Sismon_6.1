@@ -113,7 +113,7 @@ public class PerforacionEscenariolIF extends javax.swing.JInternalFrame {
             estrategiaPerforacionMap = new TreeMap<>();
             int i = 1;
             for (Perforacion perf : perforaciones) {
-                Object[] items = new Object[15];
+                Object[] items = new Object[17];
                 items[0] = perf.getTaladroId();
                 items[1] = perf.getMacollaId();
                 items[2] = perf.getFilaId();

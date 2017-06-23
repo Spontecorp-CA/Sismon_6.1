@@ -92,8 +92,9 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
         }
 
 //        // se calcula los datos mes a mes y por fase
-        int[][][] cuenta = getPhasesCount(lista, ldMax, ldMin);
-
+        int[][][] cuenta = getPhasesOutCount(lista, ldMax, ldMin);
+        int[][][] cuentaCont = getPhasesCount(lista, ldMax, ldMin);
+        
         for (int i = 0; i < cuenta.length; i++) {
             for (int j = 0; j < cuenta[i].length; j++) {
                 for (int k = 0; k < cuenta[i][j].length; k++) {
@@ -126,8 +127,8 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
 
         for (int a = 0; a < enProgreso.length; a++) {
             for (int m = 0; m < enProgreso[a].length; m++) {
-                enProgreso[a][m] = cuenta[0][a][m] + cuenta[1][a][m] + cuenta[2][a][m]
-                        + cuenta[3][a][m] + cuenta[4][a][m];
+                enProgreso[a][m] = cuentaCont[0][a][m] + cuentaCont[1][a][m] + cuentaCont[2][a][m]
+                        + cuentaCont[3][a][m] + cuentaCont[4][a][m];
 
             }
         }
@@ -258,7 +259,7 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
                             cuenta[f][a][m]++;
                         }
                     }
-                }
+                }                
             } else { // termina al año siguiente o después
                 Period period = Period.between(ldIn.plusMonths(1), ldOut);
                 int meses = period.getMonths();
@@ -269,7 +270,55 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
                     cuenta[f][a][m]++;
                     ldIn = ldIn.plusMonths(1);
                 }
+           }
+        }
+
+        return cuenta;
+    }
+    
+    private int[][][] getPhasesOutCount(List<Perforacion> list, LocalDate ldMax, LocalDate ldMin) {
+
+        String[] fases = {"Superficial", "Intermedio", "Productor", "Completación",
+            "Conexión", "Evaluación"};
+        // se calcula los datos mes a mes y por fase
+        int[][][] cuenta = new int[fases.length][ldMax.getYear() - ldMin.getYear() + 1][12];
+
+        for (Perforacion perf : lista) {
+            LocalDate ldOut = Utils.parseToLocalDate(perf.getFechaOut());
+
+            if (perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_MACOLLAS)
+                    || perf.getFase().equals(Constantes.FASE_MUDANZA_ENTRE_POZOS)
+                    || perf.getFase().equals(Constantes.FASE_PILOTO)
+                    || perf.getFase().equals(Constantes.FASE_SLANT)) {
+                continue;
             }
+
+            int f = 0; // indice de fase
+            switch (perf.getFase()) {
+                case Constantes.FASE_SUPERFICIAL:
+                    f = 0;
+                    break;
+                case Constantes.FASE_INTERMEDIO:
+                    f = 1;
+                    break;
+                case Constantes.FASE_PRODUCTOR:
+                    f = 2;
+                    break;
+                case Constantes.FASE_COMPLETACION:
+                    f = 3;
+                    break;
+                case Constantes.FASE_CONEXION:
+                    f = 4;
+                    break;
+                case Constantes.FASE_EVALUACION:
+                    f = 5;
+                    break;
+            }
+
+            int a = (ldOut.getYear() - ldMin.getYear()); // indice de año de salida
+            int m = (ldOut.getMonthValue() - 1); // indice de mes de salida
+
+            cuenta[f][a][m]++;
         }
 
         return cuenta;

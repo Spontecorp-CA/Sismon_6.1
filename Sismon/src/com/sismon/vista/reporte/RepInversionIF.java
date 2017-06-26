@@ -227,7 +227,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
                 for (Integer indice : taladrosSelectedSet) {
                     Taladro tal = (Taladro) taladrosList.getModel().getElementAt(indice);
                     if (primeravez) {
-                        query.append(" AND p.taladroId = :taladro").append(indice);
+                        query.append(" AND (p.taladroId = :taladro").append(indice);
                         paraName = "taladro" + String.valueOf(indice);
                         paramNameList.add(paraName);
                         paramList.add(tal);
@@ -239,6 +239,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
                         paramList.add(tal);
                     }
                 }
+                query.append(") ");
                 reporteTitle = "Perforación por Taladro";
                 reporteFiltro = Constantes.REPORTE_POR_TALADRO;
             }
@@ -259,7 +260,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
                 for (Integer indice : macollasSelectedSet) {
                     Macolla mac = (Macolla) macollasList.getModel().getElementAt(indice);
                     if (primeravez) {
-                        query.append(" AND p.macollaId = :macolla").append(indice);
+                        query.append(" AND (p.macollaId = :macolla").append(indice);
                         paraName = "macolla" + String.valueOf(indice);
                         paramNameList.add(paraName);
                         paramList.add(mac);
@@ -271,7 +272,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
                         paramList.add(mac);
                     }
                 }
-
+                query.append(") ");
                 reporteTitle = "Perforación por Macollas";
                 reporteFiltro = Constantes.REPORTE_POR_MACOLLA;
             }
@@ -291,7 +292,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
                 for (Integer indice : pozosSelectedSet) {
                     Pozo poz = (Pozo) pozosList.getModel().getElementAt(indice);
                     if (primeravez) {
-                        query.append(" AND p.pozoId = :pozo").append(indice);
+                        query.append(" AND (p.pozoId = :pozo").append(indice);
                         paraName = "pozo" + String.valueOf(indice);
                         paramNameList.add(paraName);
                         paramList.add(poz);
@@ -303,7 +304,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
                         paramList.add(poz);
                     }
                 }
-
+                query.append(") ");
                 reporteTitle = "Perforación por Pozos";
                 reporteFiltro = Constantes.REPORTE_POR_POZO;
             }
@@ -355,7 +356,7 @@ public class RepInversionIF extends javax.swing.JInternalFrame {
 
             perforacionList = controller
                     .getPerforacionList(query.toString(), paramName, param);
-            
+                      
             if (!perforacionList.isEmpty()) {
                 showReportDialog(perforacionList, reporteFiltro, reporteTitle);
             } else {

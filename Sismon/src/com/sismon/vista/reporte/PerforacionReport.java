@@ -7,12 +7,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 import org.apache.poi.ss.usermodel.Cell;
@@ -63,23 +60,16 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
 
         int yearUpset = 1;
         int mesUpset = 1;
+        // se coloca el encabezado de año y mes
         for (int i = 0; i < years; i++) {
             cell = row0.createCell(yearUpset);
             cell.setCellValue(firstYear++);
 
-            if (i == 0) {
-                for (int m = monthFirstYear; m <= 12; m++) {
+            for (String mese : meses) {
                     cell = row.createCell(mesUpset++);
-                    cell.setCellValue(meses[m - 1]);
-                }
-                yearUpset += mesesFirstYear;
-            } else {
-                for (String mese : meses) {
-                    cell = row.createCell(mesUpset++);
-                    cell.setCellValue(mese);
-                }
-                yearUpset += 12;
+                cell.setCellValue(mese);
             }
+            yearUpset += 12;
 
         }
 
@@ -95,34 +85,6 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
         int[][][] cuenta = getPhasesOutCount(lista, ldMax, ldMin);
         int[][][] cuentaCont = getPhasesCount(lista, ldMax, ldMin);
         
-        for (int i = 0; i < cuenta.length; i++) {
-            for (int j = 0; j < cuenta[i].length; j++) {
-                for (int k = 0; k < cuenta[i][j].length; k++) {
-                    String fase = "";
-                    switch (i) {
-                        case 0:
-                            fase = "Super";
-                            break;
-                        case 1:
-                            fase = "Inter";
-                            break;
-                        case 2:
-                            fase = "Produ";
-                            break;
-                        case 3:
-                            fase = "Compl";
-                            break;
-                        case 4:
-                            fase = "Conex";
-                            break;
-                        case 5:
-                            fase = "Evalu";
-                            break;
-                    }
-                }
-            }
-        }
-
         int[][] enProgreso = new int[ldMax.getYear() - ldMin.getYear() + 1][12];
 
         for (int a = 0; a < enProgreso.length; a++) {
@@ -132,7 +94,8 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
 
             }
         }
-        rowNumber = 6; // inicio de los superficiales
+        
+        
         int[][] terminados = getPostPerforacion(Constantes.FASE_PRODUCTOR, lista, ldMin, ldMax);
         int[][] conectados = getPostPerforacion(Constantes.FASE_CONEXION, lista, ldMin, ldMax);
         int[][] aceptados = getPostPerforacion(Constantes.FASE_EVALUACION, lista, ldMin, ldMax);
@@ -174,11 +137,12 @@ public class PerforacionReport extends SwingWorker<SXSSFWorkbook, Void> {
         }
 
         // las fases
+        rowNumber = 6; // inicio de los superficiales
         for (int f = 0; f < cuenta.length; f++) {
             row = sheet.getRow(rowNumber++);
             for (int a = 0; a < cuenta[f].length; a++) {
                 for (int m = 0; m < cuenta[f][a].length; m++) {
-                    cell = row.createCell(a * 12 + m + 1, Cell.CELL_TYPE_NUMERIC);
+                    cell = row.createCell((a * 12) + (m + 1), Cell.CELL_TYPE_NUMERIC);
                     cell.setCellValue(cuenta[f][a][m]);
                 }
             }

@@ -9,6 +9,7 @@ import com.sismon.model.Pozo;
 import com.sismon.vista.Contexto;
 import com.sismon.vista.controller.ReportesController;
 import com.sismon.vista.utilities.SismonLog;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -22,11 +23,15 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
@@ -68,7 +73,8 @@ public class RepExplotacionIF extends javax.swing.JInternalFrame {
      */
     private RepExplotacionIF(int tipoReporte) {
         initComponents();
-        setFrameIcon(icon);
+        init();
+        
         this.tipoReporte = tipoReporte;
 
         switch (tipoReporte) {
@@ -95,6 +101,10 @@ public class RepExplotacionIF extends javax.swing.JInternalFrame {
         this.macollasSelectedSet = new HashSet<>();
         this.pozosSelectedSet = new HashSet<>();
     }
+    
+    private void init(){
+        setFrameIcon(icon);
+    }
 
     public static RepExplotacionIF getInstance(int tipoReporte) {
         if (instance == null) {
@@ -115,7 +125,7 @@ public class RepExplotacionIF extends javax.swing.JInternalFrame {
         Set<String> bloques = new HashSet<>();
         Set<String> yacimientos = new HashSet<>();
         Set<String> planes = new HashSet<>();
-        List<Pozo> pozos = controller.getPozoList();
+        List<Pozo> pozos = fillPozos();//controller.getPozoList();
         pozos.stream().forEach(pz -> {
             bloques.add(pz.getBloque());
             yacimientos.add(pz.getYacimiento());
@@ -125,6 +135,27 @@ public class RepExplotacionIF extends javax.swing.JInternalFrame {
         bloques.stream().forEach(bloqueComboBox::addItem);
         yacimientos.stream().forEach(yacimientoComboBox::addItem);
         planes.stream().forEach(planComboBox::addItem);
+    }
+    
+    private List<Pozo> fillPozos(){
+        List<Pozo> pozos = new ArrayList<>();
+        Contexto.showMessage("Cargando datos desde la base, puede tardar unos segundos", Color.blue);
+        SwingWorker<List<Pozo>, Void> worker = new SwingWorker() {
+            @Override
+            protected List<Pozo> doInBackground() throws Exception {
+                
+                List<Pozo> pozos = controller.getPozoList();
+                return pozos;
+            }
+        };
+        try {
+            worker.execute();
+            pozos =  worker.get();
+            Contexto.showMessage("", Color.blue);
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(RepExplotacionIF.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return pozos;
     }
 
     private void fillCampoComboBox() {
@@ -157,6 +188,9 @@ public class RepExplotacionIF extends javax.swing.JInternalFrame {
         DefaultListModel model = new DefaultListModel();
         List<Macolla> macollas = controller.getMacollasExplotadas();
         macollas.stream()
+                .sorted((Macolla m1, Macolla m2) -> 
+                        m1.getNumero().compareTo(m2.getNumero())
+                )
                 .forEach(model::addElement);
         macollasList.setModel(model);
     }

@@ -621,9 +621,15 @@ public class ReportesController {
         }
         return paridad;
     }
+    
+    public Taladro getProduccionTaladro(Pozo pozo, String fase){
+        Perforacion perforacion = perforacionManager.getPerforacion(pozo, fase);
+        return perforacion.getTaladroId();
+    }
 
     public List<Object[]> getFechaMinMax(Escenario escenario) {
         return perforacionManager.getFechasMinMax(escenario);
+        
     }
     
     public SXSSFWorkbook makeExcelPerforacionFile(Map<Pozo, Object[]> mapa){

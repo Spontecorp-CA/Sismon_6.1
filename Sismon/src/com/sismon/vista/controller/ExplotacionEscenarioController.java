@@ -15,6 +15,8 @@ import com.sismon.model.Pozo;
 import com.sismon.model.PozoExplotado;
 import com.sismon.model.Rampeo;
 import com.sismon.vista.utilities.SismonLog;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -117,21 +119,11 @@ public class ExplotacionEscenarioController {
 
             // obtiene los pozos productores ordenados por fecha
             Map<Integer, Object[]> produccionSortedMap = sortByDate(auxiliarMap);
-
+            
             // Inicio de explotación
-            Date fechaInicio = null;
-            boolean primeraFecha = true;
+            Object[] datos = produccionSortedMap.get(1);
+            Date fechaInicio = (Date)datos[5];//null;
             Object[] data = null;
-            for (Map.Entry<Integer, Object[]> secuenciaMap : produccionSortedMap.entrySet()) {
-                data = secuenciaMap.getValue();
-                Date fechaInRampeo = (Date) data[5];
-                Date fechaAceptacion = (Date) data[6];
-                if (primeraFecha) {
-                    fechaInicio = fechaInRampeo;
-                    primeraFecha = false;
-                }
-                break;
-            }
 
             // Esto va dentro del loop cuando se procese todos los pozos
             LocalDate ldArranque = LocalDateTime.ofInstant(fechaInicio.toInstant(), ZoneId.systemDefault()).toLocalDate();
@@ -200,8 +192,10 @@ public class ExplotacionEscenarioController {
 
         // Se convierte la lista ordenada en un mapa para retornarlo
         Map<Integer, Object[]> sortedMap = new LinkedHashMap<>();
+        int i = 1;
         for (Map.Entry<Integer, Object[]> entry : list) {
-            sortedMap.put(entry.getKey(), entry.getValue());
+            //sortedMap.put(entry.getKey(), entry.getValue());
+            sortedMap.put(i++, entry.getValue());
         }
         return sortedMap;
     }
@@ -236,7 +230,7 @@ public class ExplotacionEscenarioController {
                     -> o1.getNumero().compareTo(o2.getNumero()));
 
             double maxRpm = (rampeos.get(rampeos.size() - 1)).getRpm();
-
+            
             double pi = pozo.getPi();
             double decl = pozo.getDeclinacion();
             int diasDecl = pozo.getInicioDecl();
@@ -272,7 +266,9 @@ public class ExplotacionEscenarioController {
 
             int numDias = 1;
             Instant instProduccion = fechaInRampeo.toInstant();
-            LocalDate ldProduccion = LocalDateTime.ofInstant(fechaInRampeo.toInstant(), ZoneId.systemDefault()).toLocalDate();
+            LocalDate ldProduccion = LocalDateTime
+                    .ofInstant(fechaInRampeo.toInstant(), 
+                            ZoneId.systemDefault()).toLocalDate();
             //LocalDate.ofEpochDay(fechaInRampeo.getTime() / (1000 * 3600 * 24));
 
             prodDiariaRampeo = pi;

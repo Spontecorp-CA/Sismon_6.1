@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 public class PerforacionManager extends AbstractFacade<Perforacion> {
 
@@ -517,5 +518,23 @@ public class PerforacionManager extends AbstractFacade<Perforacion> {
             sismonlog.logger.log(Level.SEVERE, "No se puedo obtener las fechas", e);
         }
         return fechas;
+    }
+    
+    public Perforacion getPerforacion(Pozo pozo, String fase){
+        Perforacion perforacion = null;
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            String query = "FROM Perforacion p WHERE p.pozoId = :pozo AND p.fase = :fase";
+            TypedQuery<Perforacion> q = em.createQuery(query, Perforacion.class);
+            q.setParameter("pozo", pozo);
+            q.setParameter("fase", fase);
+            perforacion = q.getSingleResult();
+        } catch (Exception e) {
+            sismonlog.logger.log(Level.SEVERE, "No se obtuvo una perforación para "
+                    + "el pozo {0} y la fase {1}, dió error {2}", 
+                    new Object[]{pozo.getUbicacion(), fase, e});
+        }
+        return perforacion;
     }
 }

@@ -4,7 +4,10 @@ import com.sismon.model.Explotacion;
 import com.sismon.model.Pozo;
 import com.sismon.vista.utilities.SismonLog;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -153,12 +156,20 @@ public class ExplotacionManager extends AbstractFacade<Explotacion> {
     public List<Pozo> findAllPozos(){
         EntityManager em = null;
         List<Pozo> lista = null;
+        
         try {
             em = getEntityManager();
-            Query q = em.createQuery("SELECT DISTINCT ex.pozoId FROM Explotacion ex "
-                    + "JOIN ex.pozoId p "
-                    + "ORDER BY p.macollaId, p.filaId, p.numero, ex.fecha");
-            lista = q.getResultList();
+            Query q = em.createQuery("SELECT ex FROM Explotacion ex");
+//            Query q = em.createQuery("SELECT DISTINCT ex.pozoId FROM Explotacion ex "
+//                    + "JOIN ex.pozoId p ");
+//                    + "ORDER BY p.macollaId, p.filaId, p.numero, ex.fecha");
+            List<Explotacion> listaEx = q.getResultList();
+            Set<Pozo> setPozo = new HashSet<>();
+            listaEx.forEach(ex -> {
+                setPozo.add(ex.getPozoId());
+            });
+            lista = new ArrayList<>(setPozo);
+            return lista;
         } catch (Exception e) {
             sismonlog.logger.log(Level.SEVERE, "Error buscando la data de explotacion", e);
         } finally {

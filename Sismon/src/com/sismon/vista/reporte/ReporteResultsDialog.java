@@ -3,12 +3,10 @@ package com.sismon.vista.reporte;
 import com.sismon.controller.Constantes;
 import com.sismon.model.Escenario;
 import com.sismon.model.Explotacion;
-import com.sismon.model.Macolla;
 import com.sismon.model.Perforacion;
 import com.sismon.model.Pozo;
 import com.sismon.model.Taladro;
 import com.sismon.vista.Contexto;
-import com.sismon.vista.controller.ExcelCellStyles;
 import com.sismon.vista.controller.ReportesController;
 import com.sismon.vista.reportetest.MakePerforacion;
 import com.sismon.vista.reportetest.MakePerforacionReport;
@@ -23,14 +21,12 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +43,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ReporteResultsDialog extends javax.swing.JDialog {
@@ -331,7 +326,7 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                         .toLocalDate();
 
                 String[] titulos1 = {"Bloque", "Yacimiento", "Campo", "Plan", "Macolla",
-                    "Pozo"};
+                    "Pozo", "Taladro", "Fecha Conex", "PI"};
 
                 int cellNumber = 0;
                 Row row;
@@ -357,7 +352,7 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                 }
                 Row rowYear = sheet.createRow(0);
                 // se colocan los encabezados de año y mes
-                int cellCounter = 6;
+                int cellCounter = 9;
                 for (int year = minYear; year <= maxYear; year++) {
                     cell = rowYear.createCell(cellCounter);
                     cell.setCellValue(year);
@@ -382,13 +377,16 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                 Pozo pozo = new Pozo();
                 int mesIniYearCero = 6;
                 int mesFinYearCero = mesIniYearCero + (12 - ldMin.getMonthValue());
+                double acumPozo = 0.0;
                 for (Explotacion exp : listaExp) {
                     LocalDate ld = LocalDateTime.ofInstant(exp.getFecha()
                             .toInstant(), ZoneId.systemDefault()).toLocalDate();
+                    // para evitar el NullPointerException
+                    cell = row.getCell(cellNumber);
                     if (!pozo.equals(exp.getPozoId())) { // primera aparición del pozo
                         pozo = exp.getPozoId();
                         cellNumber = 0;
-                        row = sheet.createRow(rowNumber);
+                        row = sheet.createRow(rowNumber++);
                         cell = row.createCell(cellNumber++);
                         cell.setCellValue(exp.getPozoId().getBloque());
                         cell = row.createCell(cellNumber++);
@@ -400,9 +398,18 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                         cell.setCellValue(exp.getPozoId().getPlan());
                         cell = row.createCell(cellNumber++);
                         cell.setCellValue(exp.getPozoId().getMacollaId().getNombre());
-                        cell = row.createCell(cellNumber);
+                        cell = row.createCell(cellNumber++);
                         cell.setCellValue(exp.getPozoId().getUbicacion());
                         
+                        Taladro taladro = reportesController
+                                .getProduccionTaladro(pozo, Constantes.FASE_CONEXION);
+                        cell = row.createCell(cellNumber++);
+                        cell.setCellValue(taladro.getNombre());
+                        
+                        cell = row.createCell(cellNumber++);
+                        cell.setCellValue(dateFormat.format(exp.getFecha()));
+                        cell = row.createCell(cellNumber);
+                        cell.setCellValue(exp.getPozoId().getPi());
                         
                         if(ld.getYear() == ldMin.getYear()){
                             cellNumber += ld.getMonthValue() - mesIniYearCero;
@@ -411,13 +418,26 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                                             + 12 * (ld.getYear()- 1 - ldMin.getYear()) 
                                             + ld.getMonthValue();
                         }
-                        cell = row.createCell(cellNumber++);
-                        cell.setCellValue(exp.getProdDiaria());
-                        rowNumber++;
+                        
+                        cell = row.createCell(cellNumber);
+
+                        if(isLastDayOfMonth(ld)){
+                            acumPozo += exp.getProdDiaria();
+                            cell.setCellValue(acumPozo);
+                            cellNumber++;
+                            acumPozo = 0.0;
+                        } else {
+                            acumPozo += exp.getProdDiaria();
+                        }
                     } else { // mas datos del mismo pozo
-                        row = sheet.getRow(rowNumber - 1);
-                        cell = row.createCell(cellNumber++);
-                        cell.setCellValue(exp.getProdDiaria());
+                        if (isLastDayOfMonth(ld)) {
+                            cell = row.createCell(cellNumber++);
+                            acumPozo += exp.getProdDiaria();
+                            cell.setCellValue(acumPozo);
+                            acumPozo = 0.0;
+                        } else {
+                            acumPozo += exp.getProdDiaria();
+                        }
                     }
                 }
 
@@ -440,6 +460,19 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
             LOGGER.logger.log(Level.SEVERE, null, ex);
         }
         return workbook;
+    }
+    
+    private boolean isLastDayOfMonth(LocalDate ld){
+        boolean isLastDay = false;
+        Month mes = ld.getMonth();
+        boolean isLeap = ld.isLeapYear();
+        int lastDay = mes.length(isLeap);
+        
+        if(ld.getDayOfMonth() == lastDay){
+            isLastDay = true;
+        }
+        
+        return isLastDay;
     }
 
     private int isBisiesto(int year) {

@@ -15,8 +15,6 @@ import com.sismon.model.Pozo;
 import com.sismon.model.PozoExplotado;
 import com.sismon.model.Rampeo;
 import com.sismon.vista.utilities.SismonLog;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -95,6 +93,7 @@ public class ExplotacionEscenarioController {
      * @param years
      * @param todos
      * @param hiperbolico
+     * @param fechaArranque
      * @return
      */
     public void generarProduccion(double years, boolean todos,
@@ -119,15 +118,14 @@ public class ExplotacionEscenarioController {
 
             // obtiene los pozos productores ordenados por fecha
             Map<Integer, Object[]> produccionSortedMap = sortByDate(auxiliarMap);
-            
+
             // Inicio de explotación
             Object[] datos = produccionSortedMap.get(1);
-            Date fechaInicio = (Date)datos[5];//null;
+            Date fechaInicio = (Date) datos[5];//null;
             Object[] data = null;
 
             // Esto va dentro del loop cuando se procese todos los pozos
             LocalDate ldArranque = LocalDateTime.ofInstant(fechaInicio.toInstant(), ZoneId.systemDefault()).toLocalDate();
-            //LocalDate.ofEpochDay(fechaInicio.getTime() / (1000 * 3600 * 24));
             int newYear = ldArranque.getYear() + (int) years;
             LocalDate ldFin = LocalDate.of(newYear, Month.DECEMBER, 31);
 
@@ -145,12 +143,12 @@ public class ExplotacionEscenarioController {
                         .ofInstant(((Date) data[5]).toInstant(), ZoneId.systemDefault())
                         .toLocalDate();
                 if (ldEvaluacion.isBefore(ldFin)) {
-                    if(fechaArranque == null){
-                        explotaPozo(data, ldFin, hiperbolico, (long) years);
+                    if (fechaArranque == null) {
+                        explotaPozo2(data, ldFin, hiperbolico, (long) years);
                     } else {
-                        explotaPozo(data, hiperbolico, fechaArranque, (long)years);
+                        explotaPozo(data, hiperbolico, fechaArranque, (long) years);
                     }
-                    
+
                     MacollaExplotada mcExp = new MacollaExplotada();
                     PozoExplotado pzExp = new PozoExplotado();
                     mcExp.setMacollaId((Macolla) data[1]);
@@ -230,7 +228,7 @@ public class ExplotacionEscenarioController {
                     -> o1.getNumero().compareTo(o2.getNumero()));
 
             double maxRpm = (rampeos.get(rampeos.size() - 1)).getRpm();
-            
+
             double pi = pozo.getPi();
             double decl = pozo.getDeclinacion();
             int diasDecl = pozo.getInicioDecl();
@@ -267,7 +265,7 @@ public class ExplotacionEscenarioController {
             int numDias = 1;
             Instant instProduccion = fechaInRampeo.toInstant();
             LocalDate ldProduccion = LocalDateTime
-                    .ofInstant(fechaInRampeo.toInstant(), 
+                    .ofInstant(fechaInRampeo.toInstant(),
                             ZoneId.systemDefault()).toLocalDate();
             //LocalDate.ofEpochDay(fechaInRampeo.getTime() / (1000 * 3600 * 24));
 
@@ -659,6 +657,10 @@ public class ExplotacionEscenarioController {
             prodAcumuladaDiluente += prodDiariaDlnt;
             prodAcumuladaDlntTotal += prodDiariaDlnt;
 
+            // verifica fin de mes
+            mes = ldProduccion.getMonth();//ldProd.getMonth();
+            finDeMes = mes.length(ldProduccion.isLeapYear());
+
             if (ldProduccion.isEqual(ldInicio) || ldProduccion.isAfter(ldInicio)) {
                 if (years <= 5L) {
                     Explotacion explt = new Explotacion();
@@ -674,16 +676,8 @@ public class ExplotacionEscenarioController {
                     explt.setProdDlnt(prodDiariaDlnt);
                     explt.setProdDlntAcum(prodAcumuladaDlntTotal);
                     produccionList.add(explt);
-                }
-            }
-
-            // verifica fin de mes
-            mes = ldProduccion.getMonth();//ldProd.getMonth();
-            finDeMes = mes.length(ldProduccion.isLeapYear());
-
-            if (ldProduccion.isEqual(ldInicio) || ldProduccion.isAfter(ldInicio)) {
-                if (ldProduccion.getDayOfMonth() == finDeMes) {
-                    if (years > 5L) {
+                } else {
+                    if (ldProduccion.getDayOfMonth() == finDeMes) {
                         Explotacion explt = new Explotacion();
                         Date fecha = Date.from(ldProduccion.atStartOfDay(ZoneId.systemDefault()).toInstant());
                         explt.setFecha(fecha);
@@ -697,15 +691,39 @@ public class ExplotacionEscenarioController {
                         explt.setProdDlnt(prodAcumuladaDiluente / mes.maxLength());
                         explt.setProdDlntAcum(prodAcumuladaDlntTotal);
                         produccionList.add(explt);
+                        prodAcumulada = 0.0;
+                        prodAcumuladaGas = 0.0;
+                        prodAcumuladaAyS = 0.0;
+                        prodAcumuladaDiluente = 0.0;
+                        dias = 0;
                     }
-                    prodAcumulada = 0.0;
-                    prodAcumuladaGas = 0.0;
-                    prodAcumuladaAyS = 0.0;
-                    prodAcumuladaDiluente = 0.0;
-                    dias = 0;
                 }
             }
 
+//            if (ldProduccion.isEqual(ldInicio) || ldProduccion.isAfter(ldInicio)) {
+//                if (ldProduccion.getDayOfMonth() == finDeMes) {
+//                    if (years > 5L) {
+//                        Explotacion explt = new Explotacion();
+//                        Date fecha = Date.from(ldProduccion.atStartOfDay(ZoneId.systemDefault()).toInstant());
+//                        explt.setFecha(fecha);
+//                        explt.setPozoId(pozo);
+//                        explt.setProdDiaria(prodAcumulada / mes.maxLength());
+//                        explt.setProdAcum(prodAcumuladaTotal);
+//                        explt.setProdGas(prodAcumuladaGas / mes.maxLength());
+//                        explt.setProdGasAcum(prodAcumuladaGasTotal);
+//                        explt.setProdAyS(prodAcumuladaAyS / mes.maxLength());
+//                        explt.setProdAySAcum(prodAcumuladaAySTotal);
+//                        explt.setProdDlnt(prodAcumuladaDiluente / mes.maxLength());
+//                        explt.setProdDlntAcum(prodAcumuladaDlntTotal);
+//                        produccionList.add(explt);
+//                    }
+//                    prodAcumulada = 0.0;
+//                    prodAcumuladaGas = 0.0;
+//                    prodAcumuladaAyS = 0.0;
+//                    prodAcumuladaDiluente = 0.0;
+//                    dias = 0;
+//                }
+//            }
             if (pozo.getTasaAbandono() > 0 && prodDiaria <= pozo.getTasaAbandono()) {
                 break;
             }
@@ -718,6 +736,288 @@ public class ExplotacionEscenarioController {
             dias++;
             numDias++;
         }
+    }
+
+    /**
+     *
+     * Definición de explota pozo sin indicar la fecha de inicio de la
+     * explotación
+     */
+    private void explotaPozo2(Object[] datos, LocalDate ldFin, boolean hiperbolico,
+            long years) {
+
+        try {
+            Pozo pozo = (Pozo) datos[3];
+
+            Date fechaInRampeo = (Date) datos[5];
+
+            // Fase de Rampeo
+            List<Rampeo> rampTemp = rampeoManager.findAll(pozo, escenarioSelected);
+            List<Rampeo> rampeos = new ArrayList<>();
+
+            rampTemp.stream().filter((ramp) -> (ramp.getDias() != 0)).forEach((ramp) -> {
+                rampeos.add(ramp);
+            });
+
+            Collections.sort(rampeos, (Rampeo o1, Rampeo o2)
+                    -> o1.getNumero().compareTo(o2.getNumero()));
+
+            double maxRpm = (rampeos.get(rampeos.size() - 1)).getRpm();
+
+            double pi = pozo.getPi();
+            double decl = pozo.getDeclinacion();
+            int diasDecl = pozo.getInicioDecl();
+            double b = pozo.getExpHiperb();
+            double rgp = pozo.getRgp();
+            int rgpDecl = pozo.getInicioDeclRgp();
+            double rgpIncrAnual = pozo.getIncremAnualRgp();
+            double ays = pozo.getAys();
+            int aysDecl = pozo.getInicioDeclAys();
+            double aysIncrAnual = pozo.getIncremAnualAys();
+
+            double gradoApiXP = pozo.getGradoApiXp();
+            double gradoApiDiluente = pozo.getGradoApiDiluente();
+            double gradoApiMezcla = pozo.getGradoApiMezcla();
+
+            double prodDiariaRampeo = 0.0;
+            double prodAcumuladaRampeo = 0.0;
+            double prodPromedioRampeo = 0.0;
+
+            double prodDiariaGasRampeo = 0.0;
+            double prodAcumuladaGasRampeo = 0.0;
+            double prodPromedioGasRampeo = 0.0;
+
+            double prodDiariaAySRampeo = 0.0;
+            double prodAcumuladaAySRampeo = 0.0;
+            double prodPromedioAySRampeo = 0.0;
+
+            double factorDiluente = ((141.5 / (131.5 + gradoApiXP)) - (141.5 / (131.5 + gradoApiMezcla)))
+                    / ((141.5 / (131.5 + gradoApiMezcla)) - (141.5 / (131.5 + gradoApiDiluente)));
+            double prodDiariaDiluenteRampeo = 0.0;
+            double prodAcumuladaDiluenteRampeo = 0.0;
+            double prodPromedioDiluenteRampeo = 0.0;
+
+            int numDias = 1;
+            Instant instProduccion = fechaInRampeo.toInstant();
+            LocalDate ldProduccion = LocalDateTime
+                    .ofInstant(fechaInRampeo.toInstant(),
+                            ZoneId.systemDefault()).toLocalDate();
+
+            // etapa de rampeo
+            prodDiariaRampeo = pi;
+            for (Rampeo rampa : rampeos) {
+                double rpm = rampa.getRpm();
+                double dias = rampa.getDias();
+                for (int i = 0; i < dias; i++) {
+
+                    // Petróleo
+                    if (diasDecl == 0) {
+                        if (!hiperbolico) {
+                            prodDiariaRampeo = prodDiariaRampeo * Math.exp(-decl / 365) * rpm / maxRpm;
+                        } else {
+                            prodDiariaRampeo = prodDiariaRampeo * Math.pow((1 + (b * decl / 365)), (-1 / b)) * rpm / maxRpm;
+                        }
+                    } else {
+                        prodDiariaRampeo = pi * rpm / maxRpm;
+                    }
+                    prodAcumuladaRampeo += prodDiariaRampeo;
+
+                    // Gas
+                    if (rgpDecl == 0) {
+                        prodDiariaGasRampeo = (prodDiariaRampeo * rgp / 1000) * (1 + (rgpIncrAnual / 365));
+                    } else {
+                        prodDiariaGasRampeo = prodDiariaRampeo * rgp / 1000;
+                    }
+                    prodAcumuladaGasRampeo += prodDiariaGasRampeo;
+
+                    // Agua y Sedimento
+                    if (aysDecl == 0) {
+                        prodDiariaAySRampeo = (prodDiariaRampeo / (1 - (ays + aysIncrAnual / 365)));
+                    } else {
+                        prodDiariaAySRampeo = prodDiariaRampeo / (1 - ays);
+                    }
+                    prodAcumuladaAySRampeo += prodDiariaAySRampeo;
+
+                    // Diluente
+                    prodDiariaDiluenteRampeo = prodDiariaRampeo * factorDiluente;
+                    prodAcumuladaDiluenteRampeo += prodDiariaDiluenteRampeo;
+
+                    if (years <= 1L) {
+                        saveProduccionData(ldProduccion, pozo, prodDiariaRampeo, prodAcumuladaRampeo,
+                                prodDiariaGasRampeo, prodAcumuladaGasRampeo,
+                                prodDiariaAySRampeo, prodAcumuladaAySRampeo,
+                                prodDiariaDiluenteRampeo, prodAcumuladaDiluenteRampeo);
+                    } else {
+                        if(isEndOfMonth(ldProduccion)){
+                            prodPromedioRampeo = prodAcumuladaRampeo;
+                            prodPromedioGasRampeo = prodAcumuladaGasRampeo;
+                            prodPromedioAySRampeo = prodAcumuladaAySRampeo;
+                            prodPromedioDiluenteRampeo = prodAcumuladaDiluenteRampeo;
+
+                            if (isEndOfMonth(ldProduccion)) {
+                                saveProduccionData(ldProduccion, pozo, prodPromedioRampeo, prodAcumuladaRampeo,
+                                        prodPromedioGasRampeo, prodAcumuladaGasRampeo,
+                                        prodPromedioAySRampeo, prodAcumuladaAySRampeo,
+                                        prodPromedioDiluenteRampeo, prodAcumuladaDiluenteRampeo);
+                                prodAcumuladaRampeo = 0.0;
+                                prodAcumuladaGasRampeo = 0.0;
+                                prodAcumuladaAySRampeo = 0.0;
+                                prodAcumuladaDiluenteRampeo = 0.0;
+                            }
+                        }
+                    }
+
+                    ldProduccion = ldProduccion.plusDays(1);
+                    numDias++;
+                }
+            }
+
+            // Arranque de producción después de finalizado el rampeo
+            double prodDiaria = prodDiariaRampeo;
+            double prodAcumuladaTotal = prodAcumuladaRampeo;
+            double prodAcumulada = 0.0;
+
+            double prodDiariaGas = prodDiariaGasRampeo;
+            double prodAcumuladaGasTotal = prodAcumuladaGasRampeo;
+            double prodAcumuladaGas = 0.0;
+
+            double prodDiariaAyS = prodDiariaAySRampeo;
+            double prodAcumuladaAySTotal = prodAcumuladaAySRampeo;
+            double prodAcumuladaAyS = 0.0;
+
+            double prodDiariaDlnt = prodDiariaDiluenteRampeo;
+            double prodAcumuladaDlntTotal = prodAcumuladaDiluenteRampeo;
+            double prodAcumuladaDiluente = 0.0;
+
+            int dias;
+            LocalDateTime arranqueProd = LocalDateTime.ofInstant(
+                    fechaInRampeo.toInstant(), ZoneId.systemDefault());
+
+            LocalDateTime ldtProd = LocalDateTime.ofInstant(
+                    instProduccion, ZoneId.systemDefault());
+
+            // si no ha terminado el mes se lleva el acumulado de cada parámetro
+            if (arranqueProd.getMonthValue() == ldtProd.getMonthValue()) {
+                dias = numDias;
+                prodAcumulada = prodAcumuladaRampeo;
+                prodAcumuladaGas = prodAcumuladaGasRampeo;
+                prodAcumuladaAyS = prodAcumuladaAySRampeo;
+                prodAcumuladaDiluente = prodAcumuladaDiluenteRampeo;
+            } else {
+                dias = 1;
+            }
+
+            Month mes;// = null;
+            int finDeMes = 0;
+
+            while (ldProduccion.isBefore(ldFin) || ldProduccion.isEqual(ldFin)) {
+                // calcula producción diaria y acumula
+                // Petróleo
+                
+                if (numDias >= pozo.getInicioDecl()) {
+                    if (!hiperbolico) {
+                        prodDiaria = prodDiaria * Math.exp(-decl / 365);
+                    } else {
+                        prodDiaria = prodDiaria * Math.pow((1 + (b * decl / 365)), (-1 / b));
+                    }
+                }
+                // Gas
+                if (numDias >= pozo.getInicioDeclRgp()) {
+                    prodDiariaGas = (prodDiaria * rgp / 1000) * (1 + (rgpIncrAnual / 365));
+                }
+                // AyS
+                if (numDias >= pozo.getInicioDeclAys()) {
+                    prodDiariaAyS = (prodDiaria / (1 - (ays + aysIncrAnual / 365)));
+                }
+                // Diluente
+                prodDiariaDlnt = prodDiaria * factorDiluente;
+
+                // Petróleo
+                prodAcumulada += prodDiaria;
+                prodAcumuladaTotal += prodDiaria;
+                // Gas
+                prodAcumuladaGas += prodDiariaGas;
+                prodAcumuladaGasTotal += prodDiariaGas;
+                // A y S
+                prodAcumuladaAyS += prodDiariaAyS;
+                prodAcumuladaAySTotal += prodDiariaAyS;
+                // Diluente
+                prodAcumuladaDiluente += prodDiariaDlnt;
+                prodAcumuladaDlntTotal += prodDiariaDlnt;
+
+                if (years <= 1L) {
+                    saveProduccionData(ldProduccion, pozo, prodDiaria, prodAcumuladaTotal,
+                            prodDiariaGas, prodAcumuladaGasTotal, prodDiariaAyS,
+                            prodAcumuladaAySTotal, prodDiariaDlnt, prodAcumuladaDlntTotal);
+
+                }
+
+                // verifica fin de mes
+                mes = ldProduccion.getMonth();//ldProd.getMonth();
+                finDeMes = mes.length(ldProduccion.isLeapYear());
+
+                if (ldProduccion.getDayOfMonth() == finDeMes) {
+                //if(isEndOfMonth(ldProduccion)){
+                    if (years > 1L) {
+                        saveProduccionData(ldProduccion, pozo,
+                                prodAcumulada, prodAcumuladaTotal,
+                                prodAcumuladaGas, prodAcumuladaGasTotal,
+                                prodAcumuladaAyS, prodAcumuladaAySTotal,
+                                prodAcumuladaDiluente, prodAcumuladaDlntTotal);
+
+                    }
+                    prodAcumulada = 0.0;
+                    prodAcumuladaGas = 0.0;
+                    prodAcumuladaAyS = 0.0;
+                    prodAcumuladaDiluente = 0.0;
+                    dias = 1;
+                }
+
+                if (pozo.getTasaAbandono() > 0 && prodDiaria <= pozo.getTasaAbandono()) {
+                    break;
+                }
+
+                if (pozo.getReservaMax() > 0 && prodAcumuladaTotal >= pozo.getReservaMax()) {
+                    break;
+                }
+
+                ldProduccion = ldProduccion.plusDays(1);
+                dias++;
+                numDias++;
+            }
+
+        } catch (Exception e) {
+            sismonlog.logger.log(Level.SEVERE, "Error: ", e);
+        }
+    }
+
+    private boolean isEndOfMonth(LocalDate ld) {
+        boolean result = false;
+        Month mes = ld.getMonth();//ldProd.getMonth();
+        int finDeMes = mes.length(ld.isLeapYear());
+        if (finDeMes == ld.getDayOfMonth()) {
+            result = true;
+        }
+        return result;
+    }
+
+    private void saveProduccionData(LocalDate ldProduccion, Pozo pozo, double prodDiaria,
+            double prodAcumuladaTotal, double prodDiariaGas, double prodAcumuladaGasTotal,
+            double prodDiariaAyS, double prodAcumuladaAySTotal, double prodDiariaDlnt,
+            double prodAcumuladaDlntTotal) {
+        Explotacion explt = new Explotacion();
+        Date fecha = Date.from(ldProduccion.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        explt.setFecha(fecha);
+        explt.setPozoId(pozo);
+        explt.setProdDiaria(prodDiaria);
+        explt.setProdAcum(prodAcumuladaTotal);
+        explt.setProdGas(prodDiariaGas);
+        explt.setProdGasAcum(prodAcumuladaGasTotal);
+        explt.setProdAyS(prodDiariaAyS);
+        explt.setProdAySAcum(prodAcumuladaAySTotal);
+        explt.setProdDlnt(prodDiariaDlnt);
+        explt.setProdDlntAcum(prodAcumuladaDlntTotal);
+        produccionList.add(explt);
     }
 
 }

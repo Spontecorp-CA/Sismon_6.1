@@ -80,6 +80,8 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
     private void init() {
         fillEscenarioComboBox();
         progressBar.setVisible(false);
+        fechaInicioLabel.setVisible(false);
+        fechaInicioDateChooser.setVisible(false);
     }
 
     private void configureListener() {
@@ -149,7 +151,7 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
             public void run() {
                 NumberFormat nf = new DecimalFormat("###,###,###,###,##0.00");
                 DateFormat dformat = new SimpleDateFormat("dd/MM/yyyy");
-                String[] header = {"Fecha", "Macolla", "Fila", "Pozo", "Prod Diaria", "Prod Acum",
+                String[] header = {"Fecha", "Macolla", "Fila", "Pozo", "Prod Mes", "Prod Acum",
                     "Prod Gas", "Prod Gas Acum", "Prod AyS", "Prod AyS Acum",
                     "Dlnt Necesitado", "Dlnt Nec Acum"};
 
@@ -215,7 +217,7 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
         exponencialRadioButton = new javax.swing.JRadioButton();
         hiperbolicRadioButton = new javax.swing.JRadioButton();
         progressBar = new javax.swing.JProgressBar();
-        jLabel3 = new javax.swing.JLabel();
+        fechaInicioLabel = new javax.swing.JLabel();
         fechaInicioDateChooser = new com.toedter.calendar.JDateChooser();
         backPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -290,7 +292,7 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
         declinancionButtonGroup.add(hiperbolicRadioButton);
         hiperbolicRadioButton.setText("exponente hiperbólico");
 
-        jLabel3.setText("Fecha Inicio:");
+        fechaInicioLabel.setText("Fecha Inicio:");
 
         javax.swing.GroupLayout toolPanelLayout = new javax.swing.GroupLayout(toolPanel);
         toolPanel.setLayout(toolPanelLayout);
@@ -300,23 +302,22 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(escenarioComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(toolPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(exponencialRadioButton))
-                    .addGroup(toolPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(fechaInicioDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)))
-                .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hiperbolicRadioButton)
+                        .addComponent(exponencialRadioButton)
+                        .addGap(2, 2, 2)
+                        .addComponent(hiperbolicRadioButton))
                     .addGroup(toolPanelLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(yearsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 99, Short.MAX_VALUE)
+                        .addComponent(yearsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(fechaInicioLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(fechaInicioDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(75, 75, 75))
         );
@@ -326,12 +327,17 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
                 .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(toolPanelLayout.createSequentialGroup()
                         .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel1)
-                                .addComponent(yearsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel3))
-                            .addComponent(fechaInicioDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(progressBar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(toolPanelLayout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolPanelLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(fechaInicioDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jLabel1)
+                                        .addComponent(yearsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(fechaInicioLabel)))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(toolPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
@@ -445,10 +451,10 @@ public class ExplotacionEscenarioIF extends javax.swing.JInternalFrame {
     private javax.swing.JTable explotacionTable;
     private javax.swing.JRadioButton exponencialRadioButton;
     private com.toedter.calendar.JDateChooser fechaInicioDateChooser;
+    private javax.swing.JLabel fechaInicioLabel;
     private javax.swing.JRadioButton hiperbolicRadioButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton procesarButton;
     private javax.swing.JProgressBar progressBar;

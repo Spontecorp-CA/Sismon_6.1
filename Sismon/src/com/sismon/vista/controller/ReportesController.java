@@ -622,9 +622,20 @@ public class ReportesController {
         return paridad;
     }
     
-    public Taladro getProduccionTaladro(Pozo pozo, String fase){
-        Perforacion perforacion = perforacionManager.getPerforacion(pozo, fase);
+    public Taladro getProduccionTaladro(Pozo pozo){
+        String fase = Constantes.FASE_CONEXION;
+        Perforacion perforacion = getPerforacion(pozo, fase);
         return perforacion.getTaladroId();
+    }
+    
+    public Date getFechaInicioProduccion(Pozo pozo){
+        String fase = Constantes.FASE_EVALUACION;
+        Perforacion perforacion = getPerforacion(pozo, fase);
+        return perforacion.getFechaIn();
+    }
+    
+    private Perforacion getPerforacion(Pozo pozo, String fase){
+        return perforacionManager.getPerforacion(pozo, fase);
     }
 
     public List<Object[]> getFechaMinMax(Escenario escenario) {

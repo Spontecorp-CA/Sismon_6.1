@@ -210,7 +210,7 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                 break;
             case Constantes.REPORTE_EXPLOTACION:
                 titles = new String[]{"Bloque", "Yacimiento", "Campo", "Plan",
-                    "Macolla", "Pozo", "Fecha", "Prod Diaria", "Prod Acum",
+                    "Macolla", "Pozo", "Fecha", "Prod Mes", "Prod Acum",
                     "Prod Gas", "Gas Acum", "Prod AyS", "AyS Acum",
                     "Diluente", "Dlnt Acum"};
                 data = new Object[listaExp.size()][titles.length];
@@ -221,7 +221,7 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                     data[i][2] = exp.getPozoId().getMacollaId().getCampoId().getNombre();
                     data[i][3] = exp.getPozoId().getPlan();
                     data[i][4] = exp.getPozoId().getMacollaId();
-                    data[i][5] = exp.getPozoId();
+                    data[i][5] = exp.getPozoId();                   
                     data[i][6] = dateFormat.format(exp.getFecha());
                     data[i][7] = decFormat.format(exp.getProdDiaria());
                     data[i][8] = decFormat.format(exp.getProdAcum());
@@ -378,11 +378,16 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                 int mesIniYearCero = 6;
                 int mesFinYearCero = mesIniYearCero + (12 - ldMin.getMonthValue());
                 double acumPozo = 0.0;
+                
+                // Aqui comienza a colocar en el excel la data de cada pozo
                 for (Explotacion exp : listaExp) {
+                    
+                    
                     LocalDate ld = LocalDateTime.ofInstant(exp.getFecha()
                             .toInstant(), ZoneId.systemDefault()).toLocalDate();
                     // para evitar el NullPointerException
                     cell = row.getCell(cellNumber);
+                    
                     if (!pozo.equals(exp.getPozoId())) { // primera aparición del pozo
                         pozo = exp.getPozoId();
                         cellNumber = 0;
@@ -402,12 +407,14 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                         cell.setCellValue(exp.getPozoId().getUbicacion());
                         
                         Taladro taladro = reportesController
-                                .getProduccionTaladro(pozo, Constantes.FASE_CONEXION);
+                                .getProduccionTaladro(pozo);
                         cell = row.createCell(cellNumber++);
                         cell.setCellValue(taladro.getNombre());
                         
+                        Date fechaInicio = reportesController
+                                .getFechaInicioProduccion(pozo);
                         cell = row.createCell(cellNumber++);
-                        cell.setCellValue(dateFormat.format(exp.getFecha()));
+                        cell.setCellValue(dateFormat.format(fechaInicio));
                         cell = row.createCell(cellNumber);
                         cell.setCellValue(exp.getPozoId().getPi());
                         
@@ -416,7 +423,7 @@ public class ReporteResultsDialog extends javax.swing.JDialog {
                         } else { 
                             cellNumber = mesFinYearCero 
                                             + 12 * (ld.getYear()- 1 - ldMin.getYear()) 
-                                            + ld.getMonthValue();
+                                            + ld.getMonthValue() + 3;
                         }
                         
                         cell = row.createCell(cellNumber);
